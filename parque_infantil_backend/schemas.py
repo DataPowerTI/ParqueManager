@@ -49,7 +49,26 @@ class SessaoOut(SessaoBase):
     id: int
     horario_inicio: datetime
     status: str
+    valor_pago: Optional[float] = None
+    forma_pagamento: Optional[str] = None
 
+    model_config = ConfigDict(from_attributes=True)
+
+class SessaoFinalizar(BaseModel):
+    valor_pago: float
+    forma_pagamento: str
+
+# --- Tabela de Preços ---
+class TabelaPrecoBase(BaseModel):
+    minutos: int
+    valor: float
+    ativo: int = 1
+
+class TabelaPrecoCreate(TabelaPrecoBase):
+    pass
+
+class TabelaPrecoOut(TabelaPrecoBase):
+    id: int
     model_config = ConfigDict(from_attributes=True)
 
 # --- Autenticação e Usuários ---
@@ -86,3 +105,4 @@ class RelatorioCaixaMensal(BaseModel):
     faturamento_total: float
     total_criancas: int
     mes_ano: str
+    pagamentos: dict

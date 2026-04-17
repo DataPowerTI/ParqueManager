@@ -31,8 +31,18 @@ class Sessao(Base):
     horario_inicio = Column(DateTime, default=datetime.utcnow)
     tempo_contratado = Column(Integer) # em minutos
     status = Column(String, default="Ativo") # Ativo ou Finalizado
+    valor_pago = Column(Float, nullable=True) # Quanto cobrou no pos-pago
+    forma_pagamento = Column(String, nullable=True) # PIX, Debito, Credito, Dinheiro
     
     cliente = relationship("Cliente", back_populates="sessoes")
+
+class TabelaPreco(Base):
+    __tablename__ = "tabelas_preco"
+
+    id = Column(Integer, primary_key=True, index=True)
+    minutos = Column(Integer)
+    valor = Column(Float)
+    ativo = Column(Integer, default=1) # 1 = Ativo, 0 = Inativo (SQLite n tem boolean real)
 
 class Usuario(Base):
     __tablename__ = "usuarios"

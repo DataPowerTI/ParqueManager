@@ -143,6 +143,31 @@ def update_config(config_data: schemas.ConfiguracaoBase, db: Session = Depends(g
     return config
 
 # ==============================================================================
+# TABELA DE PREÇOS
+# ==============================================================================
+
+@app.get("/precos", response_model=List[schemas.TabelaPrecoOut])
+def listar_precos(db: Session = Depends(get_db)):
+    return db.query(models.TabelaPreco).filter(models.TabelaPreco.ativo == 1).all()
+
+@app.post("/precos", response_model=schemas.TabelaPrecoOut)
+def criar_preco(preco: schemas.TabelaPrecoCreate, db: Session = Depends(get_db), admin: models.Usuario = Depends(get_current_admin)):
+    db_preco = models.TabelaPreco(**preco.dict())
+    db.add(db_preco)
+    db.commit()
+    db.refresh(db_preco)
+    return db_preco
+
+@app.delete("/precos/{preco_id}")
+def remover_preco(preco_id: int, db: Session = Depends(get_db), admin: models.Usuario = Depends(get_current_admin)):
+    preco = db.query(models.TabelaPreco).filter(models.TabelaPreco.id == preco_id).first()
+    if not preco:
+        raise HTTPException(status_code=404, detail="Preço não encontrado")
+    preco.ativo = 0
+    db.commit()
+    return {"message": "Preço removido"}
+
+# ==============================================================================
 # RELATÓRIOS E FLUXO DE CAIXA (Exclusivo Admin)
 # ==============================================================================
 
@@ -158,10 +183,17 @@ def relatorio_hoje(db: Session = Depends(get_db), admin: models.Usuario = Depend
     total_criancas = len(sessoes_hoje)
     faturamento_bruto = sum((c.valor_final or 0) - c.valor_inicial for c in caixas_hoje if c.status == "Fechado")
     
+    pagamentos = {}
+    for s in sessoes_hoje:
+        if s.status == "Finalizado" and s.valor_pago is not None:
+            k = s.forma_pagamento or "Dinheiro"
+            pagamentos[k] = pagamentos.get(k, 0.0) + s.valor_pago
+    
     return {
         "data": str(hoje),
         "total_criancas_brincaram": total_criancas,
-        "faturamento_caixas_fechados": faturamento_bruto
+        "faturamento_caixas_fechados": faturamento_bruto,
+        "detalhamento_sessoes": pagamentos
     }
 
 @app.get("/relatorios/mensal", response_model=schemas.RelatorioCaixaMensal)
@@ -174,15 +206,27 @@ def relatorio_mensal(mes: int, ano: int, db: Session = Depends(get_db), admin: m
     
     faturamento = sum((c.valor_final or 0) - c.valor_inicial for c in caixas_mes)
     
+    pagamentos = {}
+    for s in sessoes_mes:
+        if s.status == "Finalizado" and s.valor_pago is not None:
+            k = s.forma_pagamento or "Dinheiro"
+            pagamentos[k] = pagamentos.get(k, 0.0) + s.valor_pago
+
     return {
         "faturamento_total": faturamento,
         "total_criancas": len(sessoes_mes),
-        "mes_ano": f"{mes:02d}/{ano}"
+        "mes_ano": f"{mes:02d}/{ano}",
+        "pagamentos": pagamentos
     }
 
 # ==============================================================================
 # CAIXA (Protegido)
 # ==============================================================================
+
+@app.get("/caixa/status", response_model=Optional[schemas.CaixaOut])
+def status_caixa(db: Session = Depends(get_db), user: models.Usuario = Depends(get_current_user)):
+    caixa = db.query(models.Caixa).filter(models.Caixa.status == "Aberto").first()
+    return caixa
 
 @app.post("/caixa/abrir", response_model=schemas.CaixaOut)
 def abrir_caixa(caixa: schemas.CaixaCreate, db: Session = Depends(get_db), user: models.Usuario = Depends(get_current_user)):
@@ -230,6 +274,10 @@ def criar_cliente(cliente: schemas.ClienteCreate, db: Session = Depends(get_db),
 def listar_clientes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user: models.Usuario = Depends(get_current_user)):
     return db.query(models.Cliente).offset(skip).limit(limit).all()
 
+@app.get("/sessoes/", response_model=List[schemas.SessaoOut])
+def listar_sessoes_ativas(db: Session = Depends(get_db), user: models.Usuario = Depends(get_current_user)):
+    return db.query(models.Sessao).filter(models.Sessao.status == "Ativo").all()
+
 @app.post("/sessoes/iniciar", response_model=schemas.SessaoOut)
 def iniciar_sessao(sessao: schemas.SessaoCreate, db: Session = Depends(get_db), user: models.Usuario = Depends(get_current_user)):
     cliente = db.query(models.Cliente).filter(models.Cliente.id == sessao.cliente_id).first()
@@ -243,7 +291,7 @@ def iniciar_sessao(sessao: schemas.SessaoCreate, db: Session = Depends(get_db), 
     return db_sessao
 
 @app.post("/sessoes/finalizar/{sessao_id}", response_model=schemas.SessaoOut)
-def finalizar_sessao(sessao_id: int, db: Session = Depends(get_db), user: models.Usuario = Depends(get_current_user)):
+def finalizar_sessao(sessao_id: int, pagamento: schemas.SessaoFinalizar, db: Session = Depends(get_db), user: models.Usuario = Depends(get_current_user)):
     db_sessao = db.query(models.Sessao).filter(models.Sessao.id == sessao_id).first()
     if not db_sessao:
         raise HTTPException(status_code=404, detail="Sessão não encontrada.")
@@ -251,6 +299,8 @@ def finalizar_sessao(sessao_id: int, db: Session = Depends(get_db), user: models
         raise HTTPException(status_code=400, detail="Esta sessão já foi finalizada.")
     
     db_sessao.status = "Finalizado"
+    db_sessao.valor_pago = pagamento.valor_pago
+    db_sessao.forma_pagamento = pagamento.forma_pagamento
     db.commit()
     db.refresh(db_sessao)
     return db_sessao
