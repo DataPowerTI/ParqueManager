@@ -4,8 +4,11 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Configuracoes from './pages/Configuracoes';
 import Relatorios from './pages/Relatorios';
+import Usuarios from './pages/Usuarios';
 
-function ProtectedRoute({ children, reqRole }: { children: JSX.Element, reqRole?: string }) {
+import React from 'react';
+
+function ProtectedRoute({ children, reqRole }: { children: React.ReactNode, reqRole?: string }) {
   const { user } = useAuth();
   
   if (!user) {
@@ -36,6 +39,11 @@ function App() {
       <Route path="/relatorios" element={
         <ProtectedRoute reqRole="adm">
           <Relatorios />
+        </ProtectedRoute>
+      } />
+      <Route path="/usuarios" element={
+        <ProtectedRoute reqRole="adm">
+          <Usuarios />
         </ProtectedRoute>
       } />
     </Routes>

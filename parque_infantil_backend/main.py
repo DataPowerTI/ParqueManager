@@ -125,6 +125,40 @@ def get_me(current_user: models.Usuario = Depends(get_current_user)):
     return current_user
 
 # ==============================================================================
+# GESTÃO DE USUÁRIOS (Exclusivo Admin)
+# ==============================================================================
+
+@app.get("/usuarios", response_model=List[schemas.UsuarioOut])
+def listar_usuarios(db: Session = Depends(get_db), admin: models.Usuario = Depends(get_current_admin)):
+    return db.query(models.Usuario).all()
+
+@app.post("/usuarios", response_model=schemas.UsuarioOut)
+def criar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db), admin: models.Usuario = Depends(get_current_admin)):
+    existente = db.query(models.Usuario).filter(models.Usuario.username == usuario.username).first()
+    if existente:
+        raise HTTPException(status_code=400, detail="Nome de usuário já cadastrado.")
+    
+    hashed_pw = get_password_hash(usuario.password)
+    db_user = models.Usuario(username=usuario.username, password_hash=hashed_pw, role=usuario.role)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@app.delete("/usuarios/{usuario_id}")
+def remover_usuario(usuario_id: int, db: Session = Depends(get_db), admin: models.Usuario = Depends(get_current_admin)):
+    if admin.id == usuario_id:
+        raise HTTPException(status_code=400, detail="Você não pode remover seu próprio usuário.")
+        
+    user = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+        
+    db.delete(user)
+    db.commit()
+    return {"message": "Usuário removido com sucesso."}
+
+# ==============================================================================
 # CONFIGURAÇÕES (Livre p ler, Protegido p Editar)
 # ==============================================================================
 

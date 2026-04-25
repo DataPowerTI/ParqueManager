@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Square, Plus, Wallet, Clock, User, X, CheckCircle2, LogOut, Settings, BarChart3, Grip, ArrowRight, DollarSign } from 'lucide-react';
+import { Play, Square, Plus, Wallet, Clock, User, X, CheckCircle2, LogOut, Settings, BarChart3, DollarSign, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../lib/api';
+import { imprimirComprovante } from '../lib/printer';
 
 interface TabelaPreco {
   id: number;
@@ -226,6 +227,17 @@ export default function Dashboard() {
         valor_pago: valorCobrado,
         forma_pagamento: formaPagamento
       });
+
+      imprimirComprovante({
+        empresa: configuracao?.nome_empresa || 'Parque Manager',
+        cnpj: configuracao?.cnpj || '',
+        operador: user?.username || 'Operador',
+        cliente: showModalOut.cliente,
+        sessao: showModalOut.sessao,
+        valor: valorCobrado,
+        formaPagamento: formaPagamento
+      });
+
       setShowModalOut(null);
       carregarDados();
     } catch (e) { alert("Erro no checkout."); }
@@ -256,6 +268,9 @@ export default function Dashboard() {
           <div className="flex gap-2">
             {user?.role === 'adm' && (
               <>
+                <Link to="/usuarios" className="p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Usuários">
+                  <Users size={22} />
+                </Link>
                 <Link to="/relatorios" className="p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Relatórios">
                   <BarChart3 size={22} />
                 </Link>
