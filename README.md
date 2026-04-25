@@ -3,7 +3,7 @@
     <h1 align="center" style="color: white; margin: 0;">🎡 Parque Manager PRO</h1>
   </div>
   <p align="center">
-    <strong>Sistema Open-Source de Gestão em Tempo Real para Parques Infantis e Espaços Kids</strong>
+    <strong>Sistema Proprietário de Gestão em Tempo Real para Parques Infantis e Espaços Kids</strong>
   </p>
   <p align="center">
     <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white" alt="FastAPI" />
@@ -16,7 +16,7 @@
 ---
 
 ## 📖 Sobre o Projeto
-O **Parque Manager PRO** é uma solução *SaaS White-Label* completa desenvolvida para suprir as dores comerciais de gestão de tempo, controle financeiro (fechamento de fluxo de caixa) e segurança no monitoramento de Crianças em shoppings, boliches e parques isolados. 
+O **Parque Manager PRO** é um sistema comercial fechado, comercializado no modelo de assinatura mensal (SaaS), desenvolvido para suprir as dores comerciais de gestão de tempo, controle financeiro (fechamento de fluxo de caixa) e segurança no monitoramento de crianças em shoppings, boliches e parques isolados. 
 
 O sistema conta com Cronômetros Inteligentes que mudam de cor conforme o esgotamento do tempo contratado, além de Controle de Acesso Restrito Baseado em Função (RBAC) via JWT para Operadores de Caixa e Administradores Globais.
 
@@ -83,4 +83,4 @@ A aplicação automaticamente subirá em `http://localhost:5173/`.
 > ℹ **DICA:** Você pode acessar imediatamente com as credenciais administrativas geradas automaticamente pelo Seed interno do Python: **admin** e **admin123**.
 
 ---
-Feito de forma colaborativa e open-source para escalar Gestões locais ❤️
+© 2026 Parque Manager PRO. Todos os direitos reservados. Software proprietário e licenciado sob assinatura mensal.
