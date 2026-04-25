@@ -79,7 +79,8 @@ export const imprimirComprovante = (dados: DadosComprovante) => {
         
         <div class="text-center mt-2">
           Obrigado pela preferência!<br>
-          Volte sempre.
+          Volte sempre.<br><br>
+          <span style="font-size: 10px;">Desenvolvido por Data Power Labs</span>
         </div>
 
         <script>

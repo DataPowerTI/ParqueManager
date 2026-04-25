@@ -336,6 +336,10 @@ export default function Dashboard() {
         )}
       </main>
 
+      <footer className="text-center pb-8 pt-4 text-slate-400 text-sm font-medium">
+        Desenvolvido por <strong className="text-slate-500">Data Power Labs</strong>
+      </footer>
+
       {/* MODAL CHECK-IN */}
       {showModalIn && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4">

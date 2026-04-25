@@ -83,4 +83,4 @@ A aplicação automaticamente subirá em `http://localhost:5173/`.
 > ℹ **DICA:** Você pode acessar imediatamente com as credenciais administrativas geradas automaticamente pelo Seed interno do Python: **admin** e **admin123**.
 
 ---
-© 2026 Parque Manager PRO. Todos os direitos reservados. Software proprietário e licenciado sob assinatura mensal.
+© 2026 Parque Manager PRO. Desenvolvido por Data Power Labs. Todos os direitos reservados. Software proprietário e licenciado sob assinatura mensal.
